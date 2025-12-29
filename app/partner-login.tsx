@@ -1,8 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Scissors } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,10 +14,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/colors';
+import { usePopup } from '@/components/popup';
 
 export default function PartnerLogin() {
   const router = useRouter();
   const { login } = useAuth();
+  const { showPopup } = usePopup();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,7 +27,11 @@ export default function PartnerLogin() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Please fill in all fields',
+      });
       return;
     }
 
@@ -41,6 +46,15 @@ export default function PartnerLogin() {
         token: 'mock_token_123',
         phone: '+917788990011',
       });
+
+      showPopup({
+        variant: 'success',
+        title: 'Login successful',
+        message: 'Welcome back!',
+        durationMs: 1000,
+      });
+
+      router.replace('/partner/(tabs)');
       setIsLoading(false);
     }, 1000);
   };
@@ -58,7 +72,7 @@ export default function PartnerLogin() {
         >
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Scissors size={40} color={Colors.partner} strokeWidth={1.5} />
+              <Ionicons name="cut" size={40} color={Colors.partner} strokeWidth={1.5} />
             </View>
             <Text style={styles.title}>Partner Login</Text>
             <Text style={styles.subtitle}>
@@ -98,9 +112,9 @@ export default function PartnerLogin() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye-off" size={20} color={Colors.textMuted} />
                   ) : (
-                    <Eye size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye" size={20} color={Colors.textMuted} />
                   )}
                 </TouchableOpacity>
               </View>

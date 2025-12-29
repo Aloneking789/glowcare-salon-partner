@@ -1,4 +1,4 @@
-import { LogOut, Phone, Mail, Settings, Tag } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from 'react';
@@ -13,7 +13,10 @@ export default function Profile() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
         </View>
@@ -26,12 +29,12 @@ export default function Profile() {
           
           <View style={styles.contactInfo}>
             <View style={styles.contactItem}>
-              <Mail size={16} color={Colors.textLight} />
+              <Ionicons name="mail" size={16} color={Colors.textLight} />
               <Text style={styles.contactText}>{user?.email}</Text>
             </View>
             {user?.phone && (
               <View style={styles.contactItem}>
-                <Phone size={16} color={Colors.textLight} />
+                <Ionicons name="call" size={16} color={Colors.textLight} />
                 <Text style={styles.contactText}>{user.phone}</Text>
               </View>
             )}
@@ -56,7 +59,7 @@ export default function Profile() {
 
           <View style={styles.skillsCard}>
             <View style={styles.skillsHeader}>
-              <Tag size={20} color={Colors.partner} />
+              <Ionicons name="pricetag" size={20} color={Colors.partner} />
               <Text style={styles.skillsTitle}>My Skills</Text>
             </View>
             <View style={styles.skills}>
@@ -70,7 +73,7 @@ export default function Profile() {
 
           <TouchableOpacity style={styles.menuItem}>
             <View style={styles.menuIconContainer}>
-              <Settings size={22} color={Colors.partner} strokeWidth={2} />
+              <Ionicons name="settings" size={22} color={Colors.partner} strokeWidth={2} />
             </View>
             <View style={styles.menuContent}>
               <Text style={styles.menuLabel}>Settings</Text>
@@ -80,7 +83,7 @@ export default function Profile() {
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          <LogOut size={20} color={Colors.error} />
+          <Ionicons name="log-out" size={20} color={Colors.error} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -92,6 +95,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     padding: 20,

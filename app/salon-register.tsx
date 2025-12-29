@@ -1,8 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Store } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,10 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/colors';
+import { apiService, ApiError } from '@/services/api';
+import { usePopup } from '@/components/popup';
 
 export default function SalonRegister() {
   const router = useRouter();
   const { login } = useAuth();
+  const { showPopup } = usePopup();
   const [ownerName, setOwnerName] = useState('');
   const [salonName, setSalonName] = useState('');
   const [email, setEmail] = useState('');
@@ -29,24 +31,98 @@ export default function SalonRegister() {
 
   const handleRegister = async () => {
     if (!ownerName || !salonName || !email || !phone || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Please fill in all fields',
+      });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Please enter a valid email address',
+      });
+      return;
+    }
+
+    // Basic phone validation (10 digits)
+    const phoneRegex = /^\d{10}$/;
+    if (!phoneRegex.test(phone)) {
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Please enter a valid 10-digit phone number',
+      });
+      return;
+    }
+
+    // Password length validation
+    if (password.length < 6) {
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Password must be at least 6 characters long',
+      });
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      login({
-        id: 'salon_123',
-        name: ownerName,
-        email: email,
-        role: 'salon',
-        token: 'mock_token_123',
-        salonName: salonName,
-        phone: phone,
+    try {
+      const response = await apiService.registerSalon({
+        ownerName,
+        salonName,
+        email,
+        password,
+        phone,
       });
+
+      if (response.success) {
+        // Login with the response data
+        await login({
+          id: response.data.salonId,
+          name: response.data.ownerName,
+          email: email,
+          role: 'salon',
+          token: response.data.token,
+          salonName: response.data.salonName,
+          phone: phone,
+        });
+
+        showPopup({
+          variant: 'success',
+          title: 'Success',
+          message: 'Account created successfully!',
+          durationMs: 1200,
+        });
+
+        // Take user to salon tabs (same as login flow)
+        router.replace('/salon/(tabs)');
+      }
+    } catch (error) {
+      const apiError = error as ApiError;
+      let errorMessage = apiError.message || 'Registration failed. Please try again.';
+      
+      // Handle validation errors
+      if (apiError.errors) {
+        const errorMessages = Object.values(apiError.errors).flat();
+        errorMessage = errorMessages.join('\n');
+      }
+
+      showPopup({
+        variant: 'error',
+        title: 'Registration Failed',
+        message: errorMessage,
+        durationMs: 4500,
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -62,7 +138,7 @@ export default function SalonRegister() {
         >
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Store size={40} color={Colors.salon} strokeWidth={1.5} />
+              <Ionicons name="storefront" size={40} color={Colors.salon} strokeWidth={1.5} />
             </View>
             <Text style={styles.title}>Create Salon Account</Text>
             <Text style={styles.subtitle}>
@@ -138,9 +214,9 @@ export default function SalonRegister() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye-off" size={20} color={Colors.textMuted} />
                   ) : (
-                    <Eye size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye" size={20} color={Colors.textMuted} />
                   )}
                 </TouchableOpacity>
               </View>

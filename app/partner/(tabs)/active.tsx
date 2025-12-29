@@ -1,4 +1,4 @@
-import { MapPin, Navigation, Phone, CheckCircle, Clock, MessageCircle } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { StyleSheet, Text, TouchableOpacity, View, ScrollView, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,32 +29,36 @@ export default function Active() {
         </View>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.progressContainer}>
           <View style={styles.progressStep}>
             <View style={[styles.progressDot, styles.progressDotActive]}>
-              <CheckCircle size={16} color={Colors.white} />
+              <Ionicons name="checkmark-circle" size={16} color={Colors.white} />
             </View>
             <Text style={styles.progressLabel}>Accepted</Text>
           </View>
           <View style={styles.progressLine} />
           <View style={styles.progressStep}>
             <View style={styles.progressDot}>
-              <Navigation size={16} color={Colors.textLight} />
+              <Ionicons name="navigate" size={16} color={Colors.textLight} />
             </View>
             <Text style={styles.progressLabel}>Navigate</Text>
           </View>
           <View style={styles.progressLine} />
           <View style={styles.progressStep}>
             <View style={styles.progressDot}>
-              <MapPin size={16} color={Colors.textLight} />
+              <Ionicons name="location" size={16} color={Colors.textLight} />
             </View>
             <Text style={styles.progressLabel}>Arrived</Text>
           </View>
           <View style={styles.progressLine} />
           <View style={styles.progressStep}>
             <View style={styles.progressDot}>
-              <Clock size={16} color={Colors.textLight} />
+              <Ionicons name="time" size={16} color={Colors.textLight} />
             </View>
             <Text style={styles.progressLabel}>Complete</Text>
           </View>
@@ -69,7 +73,7 @@ export default function Active() {
             <View style={styles.customerInfo}>
               <Text style={styles.customerName}>{activeJob.customerName}</Text>
               <View style={styles.timeRow}>
-                <Clock size={14} color={Colors.textLight} />
+                <Ionicons name="time" size={14} color={Colors.textLight} />
                 <Text style={styles.scheduledTime}>Scheduled: {activeJob.scheduledTime}</Text>
               </View>
             </View>
@@ -80,13 +84,13 @@ export default function Active() {
           <View style={styles.detailsSection}>
             <View style={styles.detailRow}>
               <View style={styles.detailIconContainer}>
-                <Phone size={18} color={Colors.partner} />
+                <Ionicons name="call" size={18} color={Colors.partner} />
               </View>
               <Text style={styles.detailText}>{activeJob.customerPhone}</Text>
             </View>
             <View style={styles.detailRow}>
               <View style={styles.detailIconContainer}>
-                <MapPin size={18} color={Colors.partner} />
+                <Ionicons name="location" size={18} color={Colors.partner} />
               </View>
               <Text style={styles.detailText}>{activeJob.customerAddress}</Text>
             </View>
@@ -119,13 +123,13 @@ export default function Active() {
         <View style={styles.actionsGrid}>
           <TouchableOpacity style={styles.iconAction}>
             <View style={styles.iconActionButton}>
-              <Phone size={22} color={Colors.partner} />
+              <Ionicons name="call" size={22} color={Colors.partner} />
             </View>
             <Text style={styles.iconActionText}>Call</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconAction}>
             <View style={styles.iconActionButton}>
-              <MessageCircle size={22} color={Colors.partner} />
+              <Ionicons name="chatbubble" size={22} color={Colors.partner} />
             </View>
             <Text style={styles.iconActionText}>Message</Text>
           </TouchableOpacity>
@@ -141,7 +145,7 @@ export default function Active() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <Navigation size={20} color={Colors.white} />
+            <Ionicons name="navigate" size={20} color={Colors.white} />
             <Text style={styles.navigateText}>Start Navigation</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -164,7 +168,7 @@ export default function Active() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}
             >
-              <Clock size={20} color={Colors.white} />
+              <Ionicons name="time" size={20} color={Colors.white} />
               <Text style={styles.startJobText}>Start Job</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -180,7 +184,7 @@ export default function Active() {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
           >
-            <CheckCircle size={20} color={Colors.white} />
+            <Ionicons name="checkmark-circle" size={20} color={Colors.white} />
             <Text style={styles.completeText}>✓ Complete Job</Text>
           </LinearGradient>
         </TouchableOpacity>
@@ -229,6 +233,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   progressContainer: {
     flexDirection: 'row',

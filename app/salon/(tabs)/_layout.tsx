@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Home, CalendarDays, Scissors, Users, User } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import Colors from '@/constants/colors';
 
@@ -11,11 +11,19 @@ export default function SalonTabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: Colors.white,
-          borderTopWidth: 1,
-          borderTopColor: Colors.borderLight,
-          height: 60,
-          paddingBottom: 8,
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 12,
           paddingTop: 8,
+          marginBottom: 20,
+          marginHorizontal: 16,
+          borderRadius: 20,
+          position: 'absolute',
+          elevation: 8,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -27,35 +35,35 @@ export default function SalonTabLayout() {
         name="index"
         options={{
           title: 'Home',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="bookings"
         options={{
           title: 'Bookings',
-          tabBarIcon: ({ color }) => <CalendarDays size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="calendar" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="services"
         options={{
           title: 'Services',
-          tabBarIcon: ({ color }) => <Scissors size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="cut" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="barbers"
         options={{
           title: 'Staff',
-          tabBarIcon: ({ color }) => <Users size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="people" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
       />
     </Tabs>

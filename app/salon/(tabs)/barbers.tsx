@@ -1,45 +1,142 @@
-import { Plus, Star, Briefcase, Phone, Mail } from 'lucide-react-native';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useState, useEffect } from 'react';
+import { 
+  ScrollView, 
+  StyleSheet, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  Image,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '@/contexts/AuthContext';
+import { apiService, ApiError, CreateBarberRequest, BarberData } from '@/services/api';
 import Colors from '@/constants/colors';
+import { usePopup } from '@/components/popup';
 
 export default function Barbers() {
-  const barbers = [
-    { 
-      id: '1', 
-      name: 'Amit Kumar', 
-      specialty: ['Haircut', 'Shave'], 
-      experience: '5 years', 
-      rating: 4.8, 
-      status: 'active',
-      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
-      phone: '+919876543210',
-      completedServices: 1234,
-    },
-    { 
-      id: '2', 
-      name: 'Rohit Singh', 
-      specialty: ['Hair Color', 'Styling'], 
-      experience: '4 years', 
-      rating: 4.6, 
-      status: 'active',
-      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200',
-      phone: '+919876543211',
-      completedServices: 987,
-    },
-    { 
-      id: '3', 
-      name: 'Raj Patel', 
-      specialty: ['Haircut', 'Beard Trim'], 
-      experience: '3 years', 
-      rating: 4.7, 
-      status: 'busy',
-      image: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200',
-      phone: '+919876543212',
-      completedServices: 756,
-    },
-  ];
+  const { user } = useAuth();
+  const { showPopup } = usePopup();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFetching, setIsFetching] = useState(true);
+  const [formData, setFormData] = useState<CreateBarberRequest>({
+    name: '',
+    specialty: [],
+    experience: '',
+    image: '',
+  });
+  const [specialtyInput, setSpecialtyInput] = useState('');
+
+  const [barbers, setBarbers] = useState<BarberData[]>([]);
+
+  // Fetch barbers on component mount
+  useEffect(() => {
+    fetchBarbers();
+  }, []);
+
+  const fetchBarbers = async () => {
+    if (!user?.token) {
+      setIsFetching(false);
+      return;
+    }
+
+    try {
+      setIsFetching(true);
+      const response = await apiService.getBarbers(user.token);
+      if (response.success) {
+        setBarbers(response.data);
+      }
+    } catch (error) {
+      const apiError = error as ApiError;
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: apiError.message || 'Failed to fetch staff',
+        durationMs: 3500,
+      });
+    } finally {
+      setIsFetching(false);
+    }
+  };
+
+  const handleOpenModal = () => {
+    setFormData({ name: '', specialty: [], experience: '', image: '' });
+    setSpecialtyInput('');
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setFormData({ name: '', specialty: [], experience: '', image: '' });
+    setSpecialtyInput('');
+  };
+
+  const handleAddSpecialty = () => {
+    const trimmed = specialtyInput.trim().toLowerCase();
+    if (trimmed && !formData.specialty.includes(trimmed)) {
+      setFormData({ ...formData, specialty: [...formData.specialty, trimmed] });
+      setSpecialtyInput('');
+    }
+  };
+
+  const handleRemoveSpecialty = (spec: string) => {
+    setFormData({ 
+      ...formData, 
+      specialty: formData.specialty.filter(s => s !== spec) 
+    });
+  };
+
+  const handleAddBarber = async () => {
+    // Validation
+    if (!formData.name.trim()) {
+      showPopup({ variant: 'error', title: 'Error', message: 'Please enter staff name' });
+      return;
+    }
+    if (formData.specialty.length === 0) {
+      showPopup({ variant: 'error', title: 'Error', message: 'Please add at least one specialty' });
+      return;
+    }
+    if (!formData.experience.trim()) {
+      showPopup({ variant: 'error', title: 'Error', message: 'Please enter experience' });
+      return;
+    }
+
+    if (!user?.token) {
+      showPopup({ variant: 'error', title: 'Error', message: 'You must be logged in to add staff' });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await apiService.addBarber(user.token, formData);
+
+      if (response.success) {
+        await fetchBarbers();
+        showPopup({ variant: 'success', title: 'Success', message: 'Staff member added successfully!' });
+        handleCloseModal();
+      }
+    } catch (error) {
+      const apiError = error as ApiError;
+      let errorMessage = apiError.message || 'Failed to add barber. Please try again.';
+      
+      if (apiError.errors) {
+        const errorMessages = Object.values(apiError.errors).flat();
+        errorMessage = errorMessages.join('\n');
+      }
+
+      showPopup({ variant: 'error', title: 'Failed to Add Staff', message: errorMessage, durationMs: 3500 });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -48,90 +145,207 @@ export default function Barbers() {
           <Text style={styles.title}>Staff</Text>
           <Text style={styles.subtitle}>{barbers.length} team members</Text>
         </View>
-        <TouchableOpacity style={styles.addButton}>
-          <Plus size={20} color={Colors.white} />
+        <TouchableOpacity style={styles.addButton} onPress={handleOpenModal}>
+          <Ionicons name="add" size={20} color={Colors.white} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {barbers.map((barber) => (
-          <View key={barber.id} style={styles.barberCard}>
-            <View style={styles.barberHeader}>
-              <Image 
-                source={{ uri: barber.image }} 
-                style={styles.barberImage}
-              />
-              <View style={styles.barberInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.barberName}>{barber.name}</Text>
-                  <View style={[styles.statusDot, barber.status === 'active' ? styles.statusActive : styles.statusBusy]} />
-                </View>
-                <View style={styles.ratingContainer}>
-                  <Star size={14} color={Colors.accent} fill={Colors.accent} />
-                  <Text style={styles.rating}>{barber.rating}</Text>
-                  <Text style={styles.ratingDivider}>•</Text>
-                  <Briefcase size={14} color={Colors.textLight} />
-                  <Text style={styles.experience}>{barber.experience}</Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.specialtiesSection}>
-              <Text style={styles.specialtiesLabel}>Specialties</Text>
-              <View style={styles.specialties}>
-                {barber.specialty.map((spec, idx) => (
-                  <View key={idx} style={styles.specialtyBadge}>
-                    <Text style={styles.specialtyText}>{spec}</Text>
+      <ScrollView 
+        style={styles.content} 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {isFetching ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color={Colors.salon} />
+            <Text style={styles.loadingText}>Loading staff...</Text>
+          </View>
+        ) : barbers.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No Staff Members Yet</Text>
+            <Text style={styles.emptyText}>
+              Start by adding your first staff member
+            </Text>
+            <TouchableOpacity 
+              style={styles.emptyButton} 
+              onPress={handleOpenModal}
+              disabled={isLoading}
+            >
+              <Ionicons name="add" size={20} color={Colors.white} />
+              <Text style={styles.emptyButtonText}>Add First Staff</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <>
+            {barbers.map((barber) => (
+              <View key={barber.id} style={styles.barberCard}>
+                <View style={styles.barberHeader}>
+                  <Image 
+                    source={{ uri: barber.imageUrl || 'https://via.placeholder.com/150' }} 
+                    style={styles.barberImage}
+                  />
+                  <View style={styles.barberInfo}>
+                    <View style={styles.nameRow}>
+                      <Text style={styles.barberName}>{barber.name}</Text>
+                    </View>
+                    <View style={styles.ratingContainer}>
+                      <Ionicons name="briefcase" size={14} color={Colors.textLight} />
+                      <Text style={styles.experience}>{barber.experience}</Text>
+                    </View>
                   </View>
-                ))}
-              </View>
-            </View>
+                </View>
 
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{barber.completedServices}</Text>
-                <Text style={styles.statLabel}>Services</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={[styles.statusBadgeText, { color: barber.status === 'active' ? Colors.success : Colors.warning }]}>
-                  {barber.status === 'active' ? 'Available' : 'Busy'}
-                </Text>
-                <Text style={styles.statLabel}>Status</Text>
-              </View>
-            </View>
+                <View style={styles.specialtiesSection}>
+                  <Text style={styles.specialtiesLabel}>Specialties</Text>
+                  <View style={styles.specialties}>
+                    {barber.specialty.map((spec, idx) => (
+                      <View key={idx} style={styles.specialtyBadge}>
+                        <Text style={styles.specialtyText}>{spec}</Text>
+                      </View>
+                    ))}
+                  </View>
+                </View>
 
-            <View style={styles.actions}>
-              <TouchableOpacity style={styles.actionButton}>
-                <Phone size={18} color={Colors.salon} />
-                <Text style={styles.actionButtonText}>Call</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <Mail size={18} color={Colors.salon} />
-                <Text style={styles.actionButtonText}>Message</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.actionButtonPrimary}
-                onPress={() => console.log('View profile', barber.id)}
+                <View style={styles.actions}>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <Ionicons name="call" size={18} color={Colors.salon} />
+                    <Text style={styles.actionButtonText}>Call</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.actionButton}>
+                    <Ionicons name="mail" size={18} color={Colors.salon} />
+                    <Text style={styles.actionButtonText}>Message</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.actionButtonPrimary}
+                    onPress={() => console.log('View profile', barber.id)}
+                  >
+                    <Text style={styles.actionButtonPrimaryText}>Assign Jobs</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+
+            <TouchableOpacity 
+              style={styles.addStaffButton} 
+              onPress={handleOpenModal}
+              disabled={isLoading}
+            >
+              <LinearGradient
+                colors={[Colors.salon, Colors.primaryDark]}
+                style={styles.addStaffGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
               >
-                <Text style={styles.actionButtonPrimaryText}>Assign Jobs</Text>
-              </TouchableOpacity>
+                <Ionicons name="add" size={22} color={Colors.white} />
+                <Text style={styles.addStaffText}>Add New Staff Member</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          </>
+        )}
+      </ScrollView>
+
+      {/* Add Barber Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseModal}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={styles.modalContainer}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Add New Staff</Text>
+                <TouchableOpacity onPress={handleCloseModal} style={styles.closeButton}>
+                  <Ionicons name="close" size={24} color={Colors.text} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView style={styles.modalForm} showsVerticalScrollIndicator={false}>
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Name *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="e.g., Amit Kumar"
+                    placeholderTextColor={Colors.textMuted}
+                    value={formData.name}
+                    onChangeText={(text) => setFormData({ ...formData, name: text })}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Specialties *</Text>
+                  <View style={styles.specialtyInputContainer}>
+                    <TextInput
+                      style={[styles.input, styles.specialtyInput]}
+                      placeholder="e.g., haircut, shave, color"
+                      placeholderTextColor={Colors.textMuted}
+                      value={specialtyInput}
+                      onChangeText={setSpecialtyInput}
+                      onSubmitEditing={handleAddSpecialty}
+                      returnKeyType="done"
+                    />
+                    <TouchableOpacity 
+                      style={styles.addSpecialtyButton} 
+                      onPress={handleAddSpecialty}
+                    >
+                      <Ionicons name="add" size={20} color={Colors.white} />
+                    </TouchableOpacity>
+                  </View>
+                  {formData.specialty.length > 0 && (
+                    <View style={styles.addedSpecialties}>
+                      {formData.specialty.map((spec, idx) => (
+                        <View key={idx} style={styles.addedSpecialtyChip}>
+                          <Text style={styles.addedSpecialtyText}>{spec}</Text>
+                          <TouchableOpacity onPress={() => handleRemoveSpecialty(spec)}>
+                            <Ionicons name="close" size={16} color={Colors.salon} />
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Experience *</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="e.g., 5 years"
+                    placeholderTextColor={Colors.textMuted}
+                    value={formData.experience}
+                    onChangeText={(text) => setFormData({ ...formData, experience: text })}
+                  />
+                </View>
+
+                <View style={styles.inputGroup}>
+                  <Text style={styles.label}>Image URL (Optional)</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="https://example.com/image.jpg"
+                    placeholderTextColor={Colors.textMuted}
+                    value={formData.image}
+                    onChangeText={(text) => setFormData({ ...formData, image: text })}
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <TouchableOpacity 
+                  style={[styles.createButton, isLoading && styles.createButtonDisabled]}
+                  onPress={handleAddBarber}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.createButtonText}>
+                    {isLoading ? 'Adding...' : 'Add Staff Member'}
+                  </Text>
+                </TouchableOpacity>
+              </ScrollView>
             </View>
           </View>
-        ))}
-
-        <TouchableOpacity style={styles.addStaffButton}>
-          <LinearGradient
-            colors={[Colors.salon, Colors.primaryDark]}
-            style={styles.addStaffGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <Plus size={22} color={Colors.white} />
-            <Text style={styles.addStaffText}>Add New Staff Member</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </ScrollView>
+        </KeyboardAvoidingView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -169,6 +383,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   barberCard: {
     backgroundColor: Colors.white,
@@ -348,4 +565,162 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.white,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 60,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: Colors.textLight,
+    marginTop: 16,
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.text,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyText: {
+    fontSize: 15,
+    color: Colors.textLight,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  emptyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.salon,
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 12,
+  },
+  emptyButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.white,
+  },
+  // Modal Styles
+  modalContainer: {
+    flex: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    maxHeight: '85%',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.borderLight,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: Colors.text,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalForm: {
+    padding: 20,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.text,
+    marginBottom: 8,
+  },
+  input: {
+    height: 50,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: Colors.text,
+    backgroundColor: Colors.surface,
+  },
+  specialtyInputContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  specialtyInput: {
+    flex: 1,
+  },
+  addSpecialtyButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    backgroundColor: Colors.salon,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addedSpecialties: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 12,
+  },
+  addedSpecialtyChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.salon + '15',
+  },
+  addedSpecialtyText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: Colors.salon,
+  },
+  createButton: {
+    height: 54,
+    borderRadius: 12,
+    backgroundColor: Colors.salon,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  createButtonDisabled: {
+    opacity: 0.6,
+  },
+  createButtonText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.white,
+  },
 });
+

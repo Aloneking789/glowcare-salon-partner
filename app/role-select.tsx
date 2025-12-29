@@ -1,5 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Store, Scissors } from 'lucide-react-native';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
@@ -28,7 +28,7 @@ export default function RoleSelect() {
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.iconContainer}>
-                <Store size={48} color={Colors.white} strokeWidth={1.5} />
+                <Ionicons name="storefront" size={48} color={Colors.white} strokeWidth={1.5} />
               </View>
               <Text style={styles.cardTitle}>Salon Owner</Text>
               <Text style={styles.cardDescription}>
@@ -49,7 +49,7 @@ export default function RoleSelect() {
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.iconContainer}>
-                <Scissors size={48} color={Colors.white} strokeWidth={1.5} />
+                <Ionicons name="cut" size={48} color={Colors.white} strokeWidth={1.5} />
               </View>
               <Text style={styles.cardTitle}>Service Partner</Text>
               <Text style={styles.cardDescription}>

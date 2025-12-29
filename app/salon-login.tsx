@@ -1,8 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Store } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,10 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/colors';
+import { apiService, ApiError } from '@/services/api';
+import { usePopup } from '@/components/popup';
 
 export default function SalonLogin() {
   const router = useRouter();
   const { login } = useAuth();
+  const { showPopup } = usePopup();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -26,24 +28,59 @@ export default function SalonLogin() {
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup({ variant: 'error', title: 'Error', message: 'Please fill in all fields' });
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showPopup({ variant: 'error', title: 'Error', message: 'Please enter a valid email address' });
       return;
     }
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      login({
-        id: 'salon_123',
-        name: 'Rahul Sharma',
-        email: email,
-        role: 'salon',
-        token: 'mock_token_123',
-        salonName: 'The Style Hub',
-        phone: '+919876543210',
+    try {
+      const response = await apiService.loginSalon({
+        email,
+        password,
       });
+
+      if (response.success) {
+        // Login with the response data
+        await login({
+          id: response.data.salonId,
+          name: response.data.ownerName,
+          email: email,
+          role: 'salon',
+          token: response.data.token,
+          salonName: response.data.salonName,
+        });
+
+        showPopup({
+          variant: 'success',
+          title: 'Login successful',
+          message: `Welcome back, ${response.data.salonName}!`,
+          durationMs: 1200,
+        });
+
+        router.replace('/salon/(tabs)');
+      }
+    } catch (error) {
+      const apiError = error as ApiError;
+      let errorMessage = apiError.message || 'Login failed. Please try again.';
+      
+      // Handle validation errors
+      if (apiError.errors) {
+        const errorMessages = Object.values(apiError.errors).flat();
+        errorMessage = errorMessages.join('\n');
+      }
+
+      showPopup({ variant: 'error', title: 'Login Failed', message: errorMessage, durationMs: 3500 });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   return (
@@ -59,7 +96,7 @@ export default function SalonLogin() {
         >
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Store size={40} color={Colors.salon} strokeWidth={1.5} />
+              <Ionicons name="storefront" size={40} color={Colors.salon} strokeWidth={1.5} />
             </View>
             <Text style={styles.title}>Salon Login</Text>
             <Text style={styles.subtitle}>
@@ -99,9 +136,9 @@ export default function SalonLogin() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye-off" size={20} color={Colors.textMuted} />
                   ) : (
-                    <Eye size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye" size={20} color={Colors.textMuted} />
                   )}
                 </TouchableOpacity>
               </View>

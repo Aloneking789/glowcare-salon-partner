@@ -1,4 +1,4 @@
-import { TrendingUp, Download } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
@@ -24,12 +24,15 @@ export default function Earnings() {
         <Text style={styles.title}>Earnings</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.balanceCard}>
           <Text style={styles.balanceLabel}>Available Balance</Text>
           <Text style={styles.balanceAmount}>₹{earnings.available.toLocaleString()}</Text>
           <TouchableOpacity style={styles.withdrawButton}>
-            <Download size={18} color={Colors.white} />
+            <Ionicons name="download" size={18} color={Colors.white} />
             <Text style={styles.withdrawText}>Withdraw</Text>
           </TouchableOpacity>
         </View>
@@ -39,7 +42,7 @@ export default function Earnings() {
             <Text style={styles.statValue}>₹{earnings.today.toLocaleString()}</Text>
             <Text style={styles.statLabel}>Today</Text>
             <View style={styles.statBadge}>
-              <TrendingUp size={12} color={Colors.success} />
+              <Ionicons name="trending-up" size={12} color={Colors.success} />
               <Text style={styles.statChange}>+12%</Text>
             </View>
           </View>
@@ -47,7 +50,7 @@ export default function Earnings() {
             <Text style={styles.statValue}>₹{earnings.week.toLocaleString()}</Text>
             <Text style={styles.statLabel}>This Week</Text>
             <View style={styles.statBadge}>
-              <TrendingUp size={12} color={Colors.success} />
+              <Ionicons name="trending-up" size={12} color={Colors.success} />
               <Text style={styles.statChange}>+8%</Text>
             </View>
           </View>
@@ -55,7 +58,7 @@ export default function Earnings() {
             <Text style={styles.statValue}>₹{earnings.month.toLocaleString()}</Text>
             <Text style={styles.statLabel}>This Month</Text>
             <View style={styles.statBadge}>
-              <TrendingUp size={12} color={Colors.success} />
+              <Ionicons name="trending-up" size={12} color={Colors.success} />
               <Text style={styles.statChange}>+15%</Text>
             </View>
           </View>
@@ -88,6 +91,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     padding: 20,

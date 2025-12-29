@@ -1,5 +1,5 @@
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { Home, Briefcase, Wallet, User } from 'lucide-react-native';
 import React from 'react';
 import Colors from '@/constants/colors';
 
@@ -11,11 +11,19 @@ export default function PartnerTabLayout() {
         headerShown: false,
         tabBarStyle: {
           backgroundColor: Colors.white,
-          borderTopWidth: 1,
-          borderTopColor: Colors.borderLight,
-          height: 60,
-          paddingBottom: 8,
+          borderTopWidth: 0,
+          height: 70,
+          paddingBottom: 12,
           paddingTop: 8,
+          marginBottom: 20,
+          marginHorizontal: 16,
+          borderRadius: 20,
+          position: 'absolute',
+          elevation: 8,
+          shadowColor: Colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
         },
         tabBarLabelStyle: {
           fontSize: 12,
@@ -27,28 +35,28 @@ export default function PartnerTabLayout() {
         name="index"
         options={{
           title: 'Jobs',
-          tabBarIcon: ({ color }) => <Home size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="home" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="active"
         options={{
           title: 'Active',
-          tabBarIcon: ({ color }) => <Briefcase size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="briefcase" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="earnings"
         options={{
           title: 'Earnings',
-          tabBarIcon: ({ color }) => <Wallet size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="wallet" size={24} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <User size={24} color={color} />,
+          tabBarIcon: ({ color }) => <Ionicons name="person" size={24} color={color} />,
         }}
       />
     </Tabs>

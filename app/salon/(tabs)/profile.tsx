@@ -1,4 +1,4 @@
-import { LogOut, MapPin, Phone, Mail, Settings } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,14 +8,17 @@ export default function Profile() {
   const { user, logout } = useAuth();
 
   const menuItems = [
-    { icon: Settings, label: 'Salon Settings', subtitle: 'Mode, time blocks, hours' },
-    { icon: MapPin, label: 'Location & Address', subtitle: 'Update salon address' },
-    { icon: Phone, label: 'Contact Details', subtitle: 'Phone and email' },
+    { iconName: 'settings-outline' as const, label: 'Salon Settings', subtitle: 'Mode, time blocks, hours' },
+    { iconName: 'location-outline' as const, label: 'Location & Address', subtitle: 'Update salon address' },
+    { iconName: 'call-outline' as const, label: 'Contact Details', subtitle: 'Phone and email' },
   ];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
         </View>
@@ -29,12 +32,12 @@ export default function Profile() {
           
           <View style={styles.contactInfo}>
             <View style={styles.contactItem}>
-              <Mail size={16} color={Colors.textLight} />
+              <Ionicons name="mail" size={16} color={Colors.textLight} />
               <Text style={styles.contactText}>{user?.email}</Text>
             </View>
             {user?.phone && (
               <View style={styles.contactItem}>
-                <Phone size={16} color={Colors.textLight} />
+                <Ionicons name="call" size={16} color={Colors.textLight} />
                 <Text style={styles.contactText}>{user.phone}</Text>
               </View>
             )}
@@ -45,7 +48,7 @@ export default function Profile() {
           {menuItems.map((item, index) => (
             <TouchableOpacity key={index} style={styles.menuItem}>
               <View style={styles.menuIconContainer}>
-                <item.icon size={22} color={Colors.salon} strokeWidth={2} />
+                <Ionicons name={item.iconName} size={22} color={Colors.salon} />
               </View>
               <View style={styles.menuContent}>
                 <Text style={styles.menuLabel}>{item.label}</Text>
@@ -56,7 +59,7 @@ export default function Profile() {
         </View>
 
         <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          <LogOut size={20} color={Colors.error} />
+          <Ionicons name="log-out" size={20} color={Colors.error} />
           <Text style={styles.logoutText}>Logout</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -68,6 +71,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     padding: 20,

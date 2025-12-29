@@ -1,13 +1,13 @@
-import { Phone, MessageCircle, User, Filter } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { FlatList, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Colors from '@/constants/colors';
 import { Booking } from '@/types';
 
 export default function Bookings() {
-  const [filter, setFilter] = useState<'all' | 'pending' | 'upcoming' | 'in-progress' | 'completed'>('all');
+  const [filter, setFilter] = useState<'today' | 'tomorrow' | 'week' | 'pending' | 'completed'>('today');
 
   const bookings: Booking[] = [
     {
@@ -87,12 +87,121 @@ export default function Bookings() {
   };
 
   const filters: { key: typeof filter; label: string }[] = [
-    { key: 'all', label: 'All' },
-    { key: 'pending', label: 'Pending' },
-    { key: 'upcoming', label: 'Upcoming' },
-    { key: 'in-progress', label: 'In Progress' },
+    { key: 'today', label: "Today's Bookings" },
+    { key: 'tomorrow', label: 'Tomorrow' },
+    { key: 'week', label: 'This Week' },
+    { key: 'pending', label: 'Pending Approval' },
     { key: 'completed', label: 'Completed' },
   ];
+
+  const renderFilterItem = ({ item }: { item: typeof filters[0] }) => (
+    <TouchableOpacity
+      style={[styles.filterChip, filter === item.key && styles.filterChipActive]}
+      onPress={() => setFilter(item.key)}
+    >
+      <Text style={[styles.filterText, filter === item.key && styles.filterTextActive]}>
+        {item.label}
+      </Text>
+    </TouchableOpacity>
+  );
+
+  const renderBookingItem = ({ item: booking }: { item: Booking }) => (
+    <View style={styles.bookingCard}>
+      <View style={styles.bookingHeader}>
+        <Image 
+          source={{ uri: booking.customerImage }} 
+          style={styles.customerImage}
+        />
+        <View style={styles.customerInfo}>
+          <View style={styles.customerTop}>
+            <Text style={styles.customerName}>{booking.customerName}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
+              <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
+                {booking.status.replace('-', ' ')}
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.serviceText}>{booking.service}</Text>
+          <View style={styles.timeInfo}>
+            <Text style={styles.timeText}>{booking.date} • {booking.time}</Text>
+            <View style={styles.typeBadge}>
+              <Text style={styles.typeText}>{booking.type}</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.bookingMeta}>
+        <View style={styles.metaItem}>
+          <Ionicons name="person-outline" size={16} color={Colors.textLight} />
+          <Text style={styles.metaText}>{booking.barber || 'Not assigned'}</Text>
+        </View>
+        <View style={styles.metaItem}>
+          <Text style={styles.priceText}>₹{booking.price}</Text>
+        </View>
+      </View>
+
+      {booking.status === 'pending' && (
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="call-outline" size={18} color={Colors.salon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="chatbubble-outline" size={18} color={Colors.salon} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButtonSecondary}
+            onPress={() => console.log('Reject booking', booking.id)}
+          >
+            <Text style={styles.actionButtonSecondaryText}>Reject</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButtonPrimary}
+            onPress={() => console.log('Accept booking', booking.id)}
+          >
+            <Text style={styles.actionButtonPrimaryText}>Accept</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {booking.status === 'upcoming' && (
+        <View style={styles.actions}>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="call-outline" size={18} color={Colors.salon} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <Ionicons name="chatbubble-outline" size={18} color={Colors.salon} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButtonSecondary}
+            onPress={() => console.log('Cancel booking', booking.id)}
+          >
+            <Text style={styles.actionButtonSecondaryText}>Cancel</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.actionButtonPrimary, styles.startServiceButton]}
+            onPress={() => console.log('Start service', booking.id)}
+          >
+            <Text style={styles.actionButtonPrimaryText}>Start Service</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+      {booking.status === 'in-progress' && (
+        <TouchableOpacity 
+          style={styles.completeButton}
+          onPress={() => console.log('Complete service', booking.id)}
+        >
+          <LinearGradient
+            colors={[Colors.success, '#059669']}
+            style={styles.completeGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+            <Text style={styles.completeButtonText}>✓ Complete Service</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -102,127 +211,27 @@ export default function Bookings() {
           <Text style={styles.subtitle}>Manage all appointments</Text>
         </View>
         <TouchableOpacity style={styles.filterButton}>
-          <Filter size={20} color={Colors.salon} />
+          <Ionicons name="funnel-outline" size={20} color={Colors.salon} />
         </TouchableOpacity>
       </View>
 
-      <ScrollView
+      <FlatList
+        data={filters}
+        renderItem={renderFilterItem}
+        keyExtractor={(item) => item.key}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.filters}
-      >
-        {filters.map((item) => (
-          <TouchableOpacity
-            key={item.key}
-            style={[styles.filterChip, filter === item.key && styles.filterChipActive]}
-            onPress={() => setFilter(item.key)}
-          >
-            <Text style={[styles.filterText, filter === item.key && styles.filterTextActive]}>
-              {item.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+        style={styles.filterList}
+      />
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {bookings.map((booking) => (
-          <View key={booking.id} style={styles.bookingCard}>
-            <View style={styles.bookingHeader}>
-              <Image 
-                source={{ uri: booking.customerImage }} 
-                style={styles.customerImage}
-              />
-              <View style={styles.customerInfo}>
-                <View style={styles.customerTop}>
-                  <Text style={styles.customerName}>{booking.customerName}</Text>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(booking.status) + '20' }]}>
-                    <Text style={[styles.statusText, { color: getStatusColor(booking.status) }]}>
-                      {booking.status.replace('-', ' ')}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.serviceText}>{booking.service}</Text>
-                <View style={styles.timeInfo}>
-                  <Text style={styles.timeText}>{booking.date} • {booking.time}</Text>
-                  <View style={styles.typeBadge}>
-                    <Text style={styles.typeText}>{booking.type}</Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.bookingMeta}>
-              <View style={styles.metaItem}>
-                <User size={16} color={Colors.textLight} />
-                <Text style={styles.metaText}>{booking.barber || 'Not assigned'}</Text>
-              </View>
-              <View style={styles.metaItem}>
-                <Text style={styles.priceText}>₹{booking.price}</Text>
-              </View>
-            </View>
-
-            {booking.status === 'pending' && (
-              <View style={styles.actions}>
-                <TouchableOpacity style={styles.iconButton}>
-                  <Phone size={18} color={Colors.salon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                  <MessageCircle size={18} color={Colors.salon} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButtonSecondary}
-                  onPress={() => console.log('Reject booking', booking.id)}
-                >
-                  <Text style={styles.actionButtonSecondaryText}>Reject</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButtonPrimary}
-                  onPress={() => console.log('Accept booking', booking.id)}
-                >
-                  <Text style={styles.actionButtonPrimaryText}>Accept</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {booking.status === 'upcoming' && (
-              <View style={styles.actions}>
-                <TouchableOpacity style={styles.iconButton}>
-                  <Phone size={18} color={Colors.salon} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconButton}>
-                  <MessageCircle size={18} color={Colors.salon} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButtonSecondary}
-                  onPress={() => console.log('Cancel booking', booking.id)}
-                >
-                  <Text style={styles.actionButtonSecondaryText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.actionButtonPrimary, styles.startServiceButton]}
-                  onPress={() => console.log('Start service', booking.id)}
-                >
-                  <Text style={styles.actionButtonPrimaryText}>Start Service</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            {booking.status === 'in-progress' && (
-              <TouchableOpacity 
-                style={styles.completeButton}
-                onPress={() => console.log('Complete service', booking.id)}
-              >
-                <LinearGradient
-                  colors={[Colors.success, '#059669']}
-                  style={styles.completeGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  <Text style={styles.completeButtonText}>✓ Complete Service</Text>
-                </LinearGradient>
-              </TouchableOpacity>
-            )}
-          </View>
-        ))}
-      </ScrollView>
+      <FlatList
+        data={bookings}
+        renderItem={renderBookingItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      />
     </SafeAreaView>
   );
 }
@@ -236,8 +245,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
-    paddingTop: 12,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
   },
   title: {
     fontSize: 28,
@@ -257,6 +266,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  filterList: {
+    flexGrow: 0,
+  },
   filters: {
     paddingHorizontal: 20,
     paddingBottom: 16,
@@ -269,6 +281,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     borderWidth: 1.5,
     borderColor: Colors.border,
+    height: 46,
+    justifyContent: 'center',
   },
   filterChipActive: {
     backgroundColor: Colors.salon,
@@ -282,29 +296,30 @@ const styles = StyleSheet.create({
   filterTextActive: {
     color: Colors.white,
   },
-  content: {
-    flex: 1,
+  scrollContent: {
     paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 20,
   },
   bookingCard: {
     backgroundColor: Colors.white,
-    borderRadius: 20,
+    borderRadius: 16,
     padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
     elevation: 2,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
   },
   bookingHeader: {
     flexDirection: 'row',
     marginBottom: 12,
   },
   customerImage: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     marginRight: 12,
   },
   customerInfo: {
@@ -313,18 +328,19 @@ const styles = StyleSheet.create({
   customerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 6,
+    alignItems: 'flex-start',
+    marginBottom: 4,
   },
   customerName: {
     fontSize: 17,
     fontWeight: '700',
     color: Colors.text,
+    flex: 1,
   },
   serviceText: {
     fontSize: 14,
     color: Colors.textLight,
-    marginBottom: 6,
+    marginBottom: 4,
   },
   timeInfo: {
     flexDirection: 'row',
@@ -340,6 +356,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    marginLeft: 8,
   },
   statusText: {
     fontSize: 11,
@@ -364,7 +381,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: Colors.borderLight,
+    borderTopColor: Colors.border + '40',
   },
   metaItem: {
     flexDirection: 'row',
@@ -402,6 +419,7 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.white,
   },
   actionButtonSecondaryText: {
     fontSize: 14,
@@ -428,11 +446,11 @@ const styles = StyleSheet.create({
     marginTop: 12,
     borderRadius: 12,
     overflow: 'hidden',
-    elevation: 2,
     shadowColor: Colors.success,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.15,
     shadowRadius: 4,
+    elevation: 3,
   },
   completeGradient: {
     paddingVertical: 14,

@@ -1,4 +1,4 @@
-import { Clock, MapPin, Phone, Check, X, TrendingUp, Briefcase, Star } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,7 +39,10 @@ export default function PartnerHome() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <LinearGradient
           colors={[Colors.partner, Colors.primaryDark]}
           style={styles.heroSection}
@@ -86,7 +89,7 @@ export default function PartnerHome() {
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.statIconWhite}>
-                <TrendingUp size={20} color={Colors.white} />
+                <Ionicons name="trending-up" size={20} color={Colors.white} />
               </View>
               <Text style={styles.statValueWhite}>₹2,450</Text>
               <Text style={styles.statLabelWhite}>Today&apos;s Earnings</Text>
@@ -100,7 +103,7 @@ export default function PartnerHome() {
               end={{ x: 1, y: 1 }}
             >
               <View style={styles.statIconWhite}>
-                <Check size={20} color={Colors.white} />
+                <Ionicons name="checkmark" size={20} color={Colors.white} />
               </View>
               <Text style={styles.statValueWhite}>7</Text>
               <Text style={styles.statLabelWhite}>Jobs Completed</Text>
@@ -113,7 +116,7 @@ export default function PartnerHome() {
           <View style={styles.performanceStats}>
             <View style={styles.performanceStat}>
               <View style={styles.performanceIconContainer}>
-                <Star size={18} color={Colors.accent} />
+                <Ionicons name="star" size={18} color={Colors.accent} />
               </View>
               <View>
                 <Text style={styles.performanceValue}>4.8</Text>
@@ -123,7 +126,7 @@ export default function PartnerHome() {
             <View style={styles.performanceStatDivider} />
             <View style={styles.performanceStat}>
               <View style={styles.performanceIconContainer}>
-                <Briefcase size={18} color={Colors.info} />
+                <Ionicons name="briefcase" size={18} color={Colors.info} />
               </View>
               <View>
                 <Text style={styles.performanceValue}>156</Text>
@@ -146,7 +149,7 @@ export default function PartnerHome() {
                 <View style={styles.customerInfo}>
                   <Text style={styles.customerName}>{job.customerName}</Text>
                   <View style={styles.locationRow}>
-                    <MapPin size={14} color={Colors.textLight} />
+                    <Ionicons name="location" size={14} color={Colors.textLight} />
                     <Text style={styles.address} numberOfLines={1}>
                       {job.customerAddress}
                     </Text>
@@ -158,11 +161,11 @@ export default function PartnerHome() {
 
               <View style={styles.jobDetails}>
                 <View style={styles.detailRow}>
-                  <Phone size={16} color={Colors.textLight} />
+                  <Ionicons name="call" size={16} color={Colors.textLight} />
                   <Text style={styles.detailText}>{job.customerPhone}</Text>
                 </View>
                 <View style={styles.detailRow}>
-                  <Clock size={16} color={Colors.textLight} />
+                  <Ionicons name="time" size={16} color={Colors.textLight} />
                   <Text style={styles.detailText}>{job.scheduledTime}</Text>
                 </View>
               </View>
@@ -185,14 +188,14 @@ export default function PartnerHome() {
                   style={styles.rejectButton}
                   onPress={() => console.log('Reject job', job.id)}
                 >
-                  <X size={20} color={Colors.error} />
+                  <Ionicons name="close" size={20} color={Colors.error} />
                   <Text style={styles.rejectText}>Reject</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.acceptButton}
                   onPress={() => console.log('Accept job', job.id)}
                 >
-                  <Check size={20} color={Colors.white} />
+                  <Ionicons name="checkmark" size={20} color={Colors.white} />
                   <Text style={styles.acceptText}>Accept Job</Text>
                 </TouchableOpacity>
               </View>
@@ -208,6 +211,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   heroSection: {
     paddingTop: 12,

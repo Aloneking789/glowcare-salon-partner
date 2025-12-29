@@ -1,8 +1,7 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { Eye, EyeOff, Scissors } from 'lucide-react-native';
 import { useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,10 +14,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/colors';
+import { usePopup } from '@/components/popup';
 
 export default function PartnerRegister() {
   const router = useRouter();
   const { login } = useAuth();
+  const { showPopup } = usePopup();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -29,7 +30,11 @@ export default function PartnerRegister() {
 
   const handleRegister = async () => {
     if (!name || !email || !phone || !password) {
-      Alert.alert('Error', 'Please fill in all fields');
+      showPopup({
+        variant: 'error',
+        title: 'Error',
+        message: 'Please fill in all fields',
+      });
       return;
     }
 
@@ -44,6 +49,15 @@ export default function PartnerRegister() {
         token: 'mock_token_123',
         phone: phone,
       });
+
+      showPopup({
+        variant: 'success',
+        title: 'Success',
+        message: 'Account created successfully!',
+        durationMs: 1200,
+      });
+
+      router.replace('/partner/(tabs)');
       setIsLoading(false);
     }, 1000);
   };
@@ -61,7 +75,7 @@ export default function PartnerRegister() {
         >
           <View style={styles.header}>
             <View style={styles.iconContainer}>
-              <Scissors size={40} color={Colors.partner} strokeWidth={1.5} />
+              <Ionicons name="cut" size={40} color={Colors.partner} strokeWidth={1.5} />
             </View>
             <Text style={styles.title}>Create Partner Account</Text>
             <Text style={styles.subtitle}>
@@ -137,9 +151,9 @@ export default function PartnerRegister() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
-                    <EyeOff size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye-off" size={20} color={Colors.textMuted} />
                   ) : (
-                    <Eye size={20} color={Colors.textMuted} />
+                    <Ionicons name="eye" size={20} color={Colors.textMuted} />
                   )}
                 </TouchableOpacity>
               </View>

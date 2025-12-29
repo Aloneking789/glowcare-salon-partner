@@ -1,4 +1,4 @@
-import { ChevronRight, Clock, Calendar, Settings2, Layers } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -39,7 +39,7 @@ export default function SalonSettings() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Layers size={20} color={Colors.salon} />
+            <Ionicons name="layers" size={20} color={Colors.salon} />
             <Text style={styles.sectionTitle}>Booking Mode</Text>
           </View>
 
@@ -69,7 +69,7 @@ export default function SalonSettings() {
         {mode === 'hybrid' && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <Clock size={20} color={Colors.salon} />
+              <Ionicons name="time" size={20} color={Colors.salon} />
               <Text style={styles.sectionTitle}>Time Blocks</Text>
             </View>
             <Text style={styles.sectionSubtitle}>
@@ -79,7 +79,7 @@ export default function SalonSettings() {
             {timeBlocks.map((block) => (
               <View key={block.id} style={styles.blockCard}>
                 <View style={styles.blockTime}>
-                  <Clock size={16} color={Colors.textLight} />
+                  <Ionicons name="time" size={16} color={Colors.textLight} />
                   <Text style={styles.blockTimeText}>
                     {block.start} - {block.end}
                   </Text>
@@ -100,7 +100,7 @@ export default function SalonSettings() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Calendar size={20} color={Colors.salon} />
+            <Ionicons name="calendar" size={20} color={Colors.salon} />
             <Text style={styles.sectionTitle}>Operating Hours</Text>
           </View>
 
@@ -109,7 +109,7 @@ export default function SalonSettings() {
               <Text style={styles.hoursLabel}>Opening Time</Text>
               <TouchableOpacity style={styles.timeButton}>
                 <Text style={styles.timeButtonText}>{operatingHours.start}</Text>
-                <ChevronRight size={16} color={Colors.textLight} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.textLight} />
               </TouchableOpacity>
             </View>
             <View style={styles.hoursDivider} />
@@ -117,7 +117,7 @@ export default function SalonSettings() {
               <Text style={styles.hoursLabel}>Closing Time</Text>
               <TouchableOpacity style={styles.timeButton}>
                 <Text style={styles.timeButtonText}>{operatingHours.end}</Text>
-                <ChevronRight size={16} color={Colors.textLight} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.textLight} />
               </TouchableOpacity>
             </View>
           </View>
@@ -125,7 +125,7 @@ export default function SalonSettings() {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Settings2 size={20} color={Colors.salon} />
+            <Ionicons name="settings" size={20} color={Colors.salon} />
             <Text style={styles.sectionTitle}>Additional Settings</Text>
           </View>
 
@@ -167,7 +167,7 @@ export default function SalonSettings() {
               </View>
               <TouchableOpacity style={styles.valueButton}>
                 <Text style={styles.valueButtonText}>15 mins</Text>
-                <ChevronRight size={16} color={Colors.textLight} />
+                <Ionicons name="chevron-forward" size={16} color={Colors.textLight} />
               </TouchableOpacity>
             </View>
           </View>

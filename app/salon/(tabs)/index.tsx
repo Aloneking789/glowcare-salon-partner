@@ -1,14 +1,144 @@
-import { Users, IndianRupee, Clock, Calendar, Scissors, Settings } from 'lucide-react-native';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
+import { useState, useEffect, useRef } from 'react';
 import Colors from '@/constants/colors';
+
+// Skeleton Loader Component
+const SkeletonLoader = () => {
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, []);
+
+  const opacity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.3, 0.7],
+  });
+
+  return (
+    <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      {/* Hero Section Skeleton */}
+      <View style={[styles.heroSection, { backgroundColor: Colors.salon }]}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <Animated.View style={[styles.skeletonText, { width: 120, opacity }]} />
+            <Animated.View style={[styles.skeletonText, { width: 180, height: 24, marginTop: 4, opacity }]} />
+          </View>
+          <Animated.View style={[styles.skeletonCircle, { opacity }]} />
+        </View>
+
+        <View style={styles.todayOverview}>
+          {[1, 2, 3].map((i) => (
+            <View key={i} style={styles.overviewCard}>
+              <Animated.View style={[styles.skeletonCircle, { width: 40, height: 40, opacity }]} />
+              <Animated.View style={[styles.skeletonText, { width: 50, marginTop: 8, opacity }]} />
+              <Animated.View style={[styles.skeletonText, { width: 70, marginTop: 4, opacity }]} />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Quick Actions Skeleton */}
+      <View style={styles.quickActionsSection}>
+        {[1, 2, 3].map((i) => (
+          <Animated.View key={i} style={[styles.quickActionCard, { opacity }]}>
+            <View style={[styles.quickActionCardGradient, { backgroundColor: Colors.border }]}>
+              <Animated.View style={[styles.skeletonCircle, { width: 28, height: 28, opacity }]} />
+              <Animated.View style={[styles.skeletonText, { width: 60, marginTop: 8, opacity }]} />
+            </View>
+          </Animated.View>
+        ))}
+      </View>
+
+      {/* Chart Section Skeleton */}
+      <View style={styles.chartSection}>
+        <View style={styles.sectionHeader}>
+          <Animated.View style={[styles.skeletonText, { width: 160, opacity }]} />
+          <Animated.View style={[styles.skeletonText, { width: 70, opacity }]} />
+        </View>
+        <View style={styles.chart}>
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <View key={i} style={styles.chartBar}>
+              <View style={styles.barContainer}>
+                <Animated.View style={[styles.bar, { height: 60 + Math.random() * 60, opacity }]} />
+              </View>
+              <Animated.View style={[styles.skeletonText, { width: 30, height: 12, opacity }]} />
+            </View>
+          ))}
+        </View>
+      </View>
+
+      {/* Gallery Section Skeleton */}
+      <View style={styles.gallerySection}>
+        <View style={styles.sectionHeader}>
+          <Animated.View style={[styles.skeletonText, { width: 120, opacity }]} />
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.gallery}>
+          {[1, 2, 3].map((i) => (
+            <Animated.View key={i} style={[styles.galleryItem, { opacity }]}>
+              <View style={[styles.galleryImage, { backgroundColor: Colors.border }]} />
+            </Animated.View>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Recent Bookings Skeleton */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Animated.View style={[styles.skeletonText, { width: 140, opacity }]} />
+          <Animated.View style={[styles.skeletonText, { width: 60, opacity }]} />
+        </View>
+        {[1, 2, 3].map((i) => (
+          <Animated.View key={i} style={[styles.bookingCard, { opacity }]}>
+            <View style={[styles.bookingImage, { backgroundColor: Colors.border }]} />
+            <View style={styles.bookingInfo}>
+              <View style={styles.bookingDetails}>
+                <Animated.View style={[styles.skeletonText, { width: 120, opacity }]} />
+                <Animated.View style={[styles.skeletonText, { width: 80, marginTop: 6, opacity }]} />
+                <Animated.View style={[styles.skeletonText, { width: 70, marginTop: 4, opacity }]} />
+              </View>
+              <Animated.View style={[styles.skeletonBadge, { opacity }]} />
+            </View>
+          </Animated.View>
+        ))}
+      </View>
+    </ScrollView>
+  );
+};
 
 export default function SalonHome() {
   const { user } = useAuth();
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate data loading
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const salonImages = [
     'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800',
@@ -34,9 +164,20 @@ export default function SalonHome() {
 
   const maxBookings = Math.max(...weekData.map(d => d.bookings));
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <SkeletonLoader />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <LinearGradient
           colors={[Colors.salon, Colors.primaryDark]}
           style={styles.heroSection}
@@ -50,28 +191,28 @@ export default function SalonHome() {
               style={styles.headerSettings}
               onPress={() => router.push('/salon/settings')}
             >
-              <Settings size={24} color={Colors.white} />
+              <Ionicons name="settings-outline" size={24} color={Colors.white} />
             </TouchableOpacity>
           </View>
 
           <View style={styles.todayOverview}>
             <View style={styles.overviewCard}>
               <View style={styles.overviewIcon}>
-                <Calendar size={20} color={Colors.salon} />
+                <Ionicons name="calendar-outline" size={20} color={Colors.salon} />
               </View>
               <Text style={styles.overviewLabel}>Today</Text>
               <Text style={styles.overviewValue}>12 Bookings</Text>
             </View>
             <View style={styles.overviewCard}>
               <View style={styles.overviewIcon}>
-                <IndianRupee size={20} color={Colors.success} />
+                <Ionicons name="cash-outline" size={20} color={Colors.success} />
               </View>
               <Text style={styles.overviewLabel}>Revenue</Text>
               <Text style={styles.overviewValue}>₹2,400</Text>
             </View>
             <View style={styles.overviewCard}>
               <View style={styles.overviewIcon}>
-                <Users size={20} color={Colors.info} />
+                <Ionicons name="people-outline" size={20} color={Colors.info} />
               </View>
               <Text style={styles.overviewLabel}>Active</Text>
               <Text style={styles.overviewValue}>5 Barbers</Text>
@@ -88,7 +229,7 @@ export default function SalonHome() {
               colors={[Colors.info, '#0ea5e9']}
               style={styles.quickActionCardGradient}
             >
-              <Calendar size={28} color={Colors.white} />
+              <Ionicons name="calendar-outline" size={28} color={Colors.white} />
               <Text style={styles.quickActionCardTitle}>View All{`\n`}Bookings</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -100,7 +241,7 @@ export default function SalonHome() {
               colors={[Colors.accent, '#f59e0b']}
               style={styles.quickActionCardGradient}
             >
-              <Scissors size={28} color={Colors.white} />
+              <Ionicons name="cut-outline" size={28} color={Colors.white} />
               <Text style={styles.quickActionCardTitle}>Manage{`\n`}Services</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -112,7 +253,7 @@ export default function SalonHome() {
               colors={[Colors.success, '#10b981']}
               style={styles.quickActionCardGradient}
             >
-              <Users size={28} color={Colors.white} />
+              <Ionicons name="people-outline" size={28} color={Colors.white} />
               <Text style={styles.quickActionCardTitle}>View{`\n`}Staff</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -187,11 +328,11 @@ export default function SalonHome() {
                 <View style={styles.bookingDetails}>
                   <Text style={styles.bookingName}>{booking.name}</Text>
                   <View style={styles.bookingMeta}>
-                    <Scissors size={14} color={Colors.textLight} />
+                    <Ionicons name="cut-outline" size={14} color={Colors.textLight} />
                     <Text style={styles.bookingService}>{booking.service}</Text>
                   </View>
                   <View style={styles.bookingMeta}>
-                    <Clock size={14} color={Colors.textLight} />
+                    <Ionicons name="time-outline" size={14} color={Colors.textLight} />
                     <Text style={styles.bookingTime}>{booking.time}</Text>
                   </View>
                 </View>
@@ -213,7 +354,7 @@ export default function SalonHome() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Settings size={28} color={Colors.white} />
+              <Ionicons name="settings-outline" size={28} color={Colors.white} />
               <Text style={styles.quickActionTitleHalf}>Settings</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -224,7 +365,7 @@ export default function SalonHome() {
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
             >
-              <Calendar size={28} color={Colors.white} />
+              <Ionicons name="calendar-outline" size={28} color={Colors.white} />
               <Text style={styles.quickActionTitleHalf}>Bookings</Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -238,6 +379,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.surface,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   heroSection: {
     paddingTop: 12,
@@ -269,7 +413,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: 'rgba(151, 133, 133, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -502,7 +646,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 130,
   },
   quickActionHalf: {
     flex: 1,
@@ -525,5 +669,23 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     color: Colors.white,
+  },
+  // Skeleton Loader Styles
+  skeletonText: {
+    height: 16,
+    backgroundColor: Colors.border,
+    borderRadius: 8,
+  },
+  skeletonCircle: {
+    width: 44,
+    height: 44,
+    backgroundColor: Colors.border,
+    borderRadius: 22,
+  },
+  skeletonBadge: {
+    width: 80,
+    height: 28,
+    backgroundColor: Colors.border,
+    borderRadius: 12,
   },
 });
