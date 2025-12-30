@@ -11,7 +11,7 @@ export default function RoleSelect() {
     <View style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome to GlamHub</Text>
+          <Text style={styles.title}>Welcome to GlooCare</Text>
           <Text style={styles.subtitle}>Choose your account type to continue</Text>
         </View>
 

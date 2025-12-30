@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Image, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'expo-router';
@@ -166,61 +167,79 @@ export default function SalonHome() {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.container} edges={['top']}>
-        <SkeletonLoader />
-      </SafeAreaView>
+      <View style={styles.container}>
+        <StatusBar style="light" translucent={false} backgroundColor={Colors.salon} />
+        <SafeAreaView style={styles.safeArea} edges={['top']}>
+          <SkeletonLoader />
+        </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <View style={styles.container}>
+      <StatusBar style="light" translucent={false} backgroundColor={Colors.salon} />
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+      
+      {/* Static Header */}
+      <View style={styles.staticHeader}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.greeting}>Welcome back,</Text>
+          <Text style={styles.salonName}>{user?.salonName || 'Salon Owner'}</Text>
+        </View>
+        <TouchableOpacity 
+          style={styles.headerSettings}
+          onPress={() => router.push('/salon/settings')}
+        >
+          <Ionicons name="settings-outline" size={24} color={Colors.white} />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView 
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <LinearGradient
-          colors={[Colors.salon, Colors.primaryDark]}
-          style={styles.heroSection}
-        >
-          <View style={styles.header}>
-            <View style={styles.headerLeft}>
-              <Text style={styles.greeting}>Welcome back,</Text>
-              <Text style={styles.salonName}>{user?.salonName || 'Salon Owner'}</Text>
-            </View>
-            <TouchableOpacity 
-              style={styles.headerSettings}
-              onPress={() => router.push('/salon/settings')}
-            >
-              <Ionicons name="settings-outline" size={24} color={Colors.white} />
-            </TouchableOpacity>
-          </View>
-
+        {/* Today Overview Cards */}
+        <View style={styles.todayOverviewSection}>
           <View style={styles.todayOverview}>
             <View style={styles.overviewCard}>
-              <View style={styles.overviewIcon}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.75)']}
+                style={styles.overviewIcon}
+              >
                 <Ionicons name="calendar-outline" size={20} color={Colors.salon} />
-              </View>
+              </LinearGradient>
               <Text style={styles.overviewLabel}>Today</Text>
-              <Text style={styles.overviewValue}>12 Bookings</Text>
+              <Text style={styles.overviewValue}>12</Text>
+              <Text style={styles.overviewSubvalue}>Bookings</Text>
             </View>
             <View style={styles.overviewCard}>
-              <View style={styles.overviewIcon}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.75)']}
+                style={styles.overviewIcon}
+              >
                 <Ionicons name="cash-outline" size={20} color={Colors.success} />
-              </View>
+              </LinearGradient>
               <Text style={styles.overviewLabel}>Revenue</Text>
               <Text style={styles.overviewValue}>₹2,400</Text>
+              <Text style={styles.overviewSubvalue}>Today</Text>
             </View>
             <View style={styles.overviewCard}>
-              <View style={styles.overviewIcon}>
+              <LinearGradient
+                colors={['rgba(255,255,255,0.95)', 'rgba(255,255,255,0.75)']}
+                style={styles.overviewIcon}
+              >
                 <Ionicons name="people-outline" size={20} color={Colors.info} />
-              </View>
+              </LinearGradient>
               <Text style={styles.overviewLabel}>Active</Text>
-              <Text style={styles.overviewValue}>5 Barbers</Text>
+              <Text style={styles.overviewValue}>5</Text>
+              <Text style={styles.overviewSubvalue}>Barbers</Text>
             </View>
           </View>
-        </LinearGradient>
+        </View>
 
-        <View style={styles.quickActionsSection}>
+        <View style={styles.surfaceContent}>
+          <View style={styles.quickActionsSection}>
           <TouchableOpacity 
             style={styles.quickActionCard}
             onPress={() => router.push('/salon/bookings')}
@@ -370,18 +389,44 @@ export default function SalonHome() {
             </LinearGradient>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.salon,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.salon,
   },
   scrollContent: {
     paddingBottom: 100,
+  },
+  surfaceContent: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+  },
+  staticHeader: {
+    backgroundColor: Colors.salon,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  todayOverviewSection: {
+    backgroundColor: Colors.salon,
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
   },
   heroSection: {
     paddingTop: 12,
@@ -413,40 +458,54 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: 'rgba(151, 133, 133, 0.2)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   todayOverview: {
     flexDirection: 'row',
-    paddingHorizontal: 20,
     gap: 12,
   },
   overviewCard: {
     flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    borderRadius: 18,
+    paddingVertical: 14,
+    paddingHorizontal: 12,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    shadowColor: Colors.black,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 6,
   },
   overviewIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.surface,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 10,
   },
   overviewLabel: {
     fontSize: 11,
-    color: Colors.textLight,
-    marginBottom: 4,
+    color: Colors.textMuted,
+    marginBottom: 6,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   overviewValue: {
-    fontSize: 16,
-    fontWeight: '700',
+    fontSize: 18,
+    fontWeight: '800',
     color: Colors.text,
+  },
+  overviewSubvalue: {
+    marginTop: 2,
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textLight,
   },
   quickActionsSection: {
     flexDirection: 'row',

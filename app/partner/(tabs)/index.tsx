@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View, Switch, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '@/contexts/AuthContext';
 import Colors from '@/constants/colors';
@@ -38,11 +39,10 @@ export default function PartnerHome() {
   ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
+    <View style={styles.container}>
+      <StatusBar style="light" translucent={false} backgroundColor={Colors.partner} />
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        {/* Static Top Area (status bar + header background) */}
         <LinearGradient
           colors={[Colors.partner, Colors.primaryDark]}
           style={styles.heroSection}
@@ -80,7 +80,12 @@ export default function PartnerHome() {
           </View>
         </LinearGradient>
 
-        <View style={styles.statsContainer}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.surfaceContent}>
+            <View style={styles.statsContainer}>
           <View style={styles.statCard}>
             <LinearGradient
               colors={[Colors.partner, Colors.primaryDark]}
@@ -111,7 +116,7 @@ export default function PartnerHome() {
           </View>
         </View>
 
-        <View style={styles.performanceCard}>
+            <View style={styles.performanceCard}>
           <Text style={styles.performanceTitle}>Your Performance</Text>
           <View style={styles.performanceStats}>
             <View style={styles.performanceStat}>
@@ -136,7 +141,7 @@ export default function PartnerHome() {
           </View>
         </View>
 
-        <View style={styles.section}>
+            <View style={styles.section}>
           <Text style={styles.sectionTitle}>New Job Requests</Text>
           
           {jobs.map((job) => (
@@ -201,25 +206,36 @@ export default function PartnerHome() {
               </View>
             </View>
           ))}
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.surface,
+    backgroundColor: Colors.partner,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: Colors.partner,
   },
   scrollContent: {
     paddingBottom: 100,
   },
+  surfaceContent: {
+    backgroundColor: Colors.surface,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    marginTop: -16,
+    paddingTop: 16,
+  },
   heroSection: {
     paddingTop: 12,
     paddingBottom: 24,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
   },
   header: {
     flexDirection: 'row',
